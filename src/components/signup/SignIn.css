@@ -1,0 +1,136 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap");
+
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background-color: #f8f8f8;
+}
+
+.signin-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.signin-form-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px;
+  background: #fff;
+}
+
+.signin-form-section h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+
+.signin-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grup pentru fiecare câmp */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Stil pentru inputurile de text și email */
+.signin-form input[type="text"],
+.signin-form input[type="email"] {
+  padding: 14px 18px;
+  font-size: 16px;
+  border: 2px solid #b3aaff;
+  border-radius: 8px;
+  outline: none;
+}
+
+/* Container pentru inputurile de tip password */
+.password-input {
+  display: flex;
+  align-items: center;
+  border: 2px solid #b3aaff;
+  border-radius: 8px;
+  padding-right: 10px;
+}
+
+.password-input input {
+  flex: 1;
+  padding: 14px 18px;
+  font-size: 16px;
+  border: none;
+  outline: none;
+}
+
+/* Iconul pentru toggle password */
+.toggle-password {
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 10px;
+}
+
+/* Stil pentru butonul de submit */
+.signin-form button[type="submit"] {
+  background-color: #7a73ff;
+  color: white;
+  font-size: 16px;
+  padding: 14px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.signin-form button[type="submit"]:hover {
+  background-color: #5e58d6;
+}
+
+.divider {
+  text-align: center;
+  margin: 20px 0;
+  color: #666;
+}
+
+.google-signin {
+  background-color: #fceeee;
+  color: #db4437;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 24px;
+  font-size: 18px;
+  cursor: pointer;
+  width: fit-content;
+  align-self: center;
+}
+
+.google-logo {
+  font-weight: bold;
+}
+
+.signin-illustration-section {
+  flex: 1;
+  background-color: #706eff;
+  background-image: url("src/assets/ppl.png");
+  background-size: 50%;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* background-size: cover; */
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+label {
+  display: block;
+  text-align: left;
+}

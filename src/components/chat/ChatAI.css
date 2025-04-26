@@ -1,0 +1,101 @@
+.chat-app {
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+.sidebar {
+  width: 240px;
+  background: #fafafa;
+  border-right: 1px solid #eee;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar h2 {
+  margin: 0 0 16px;
+}
+.new-chat {
+  background: #6060f0;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+.history {
+  flex: 1;
+  overflow-y: auto;
+}
+.history-item {
+  margin-bottom: 12px;
+}
+.history-item small {
+  display: block;
+  color: #888;
+  font-size: 12px;
+}
+.upgrade {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+}
+.upgrade img {
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.upgrade-btn {
+  background: none;
+  border: none;
+  color: #6060f0;
+  cursor: pointer;
+  font-size: 12px;
+}
+.main-area {
+  flex: 1;
+  padding: 40px;
+}
+.main-area h1 {
+  font-size: 32px;
+  margin-bottom: 24px;
+}
+.examples {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.example-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #eee;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.example-card .icon {
+  font-size: 20px;
+  margin-right: 12px;
+}
+.input-bar {
+  display: flex;
+  margin-bottom: 8px;
+}
+.input-bar input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px;
+}
+.send-btn {
+  padding: 0 16px;
+  border: 1px solid #ccc;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+.notice {
+  color: #888;
+  font-size: 12px;
+}
