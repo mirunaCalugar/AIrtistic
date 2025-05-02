@@ -1,14 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Profile.css";
 
 const Profile = () => {
-  const user = {
-    name: "Brenda Gardner",
+  const [user, setUser] = useState({
+    fullName: "Brenda Gardner",
     email: "example@email.com",
     role: "Top Artist",
-    avatar: "https://via.placeholder.com/80",
-  };
-
+    avatarUrl: "https://via.placeholder.com/80",
+  });
   const [posts, setPosts] = useState([
     {
       id: 1,
@@ -16,54 +15,75 @@ const Profile = () => {
       likes: 0,
       tags: ["art", "design"],
     },
-    {
-      id: 2,
-      image: "https://via.placeholder.com/300",
-      likes: 0,
-      tags: ["photography"],
-    },
-    {
-      id: 3,
-      image: "https://via.placeholder.com/300",
-      likes: 0,
-      tags: ["art", "abstract"],
-    },
-    {
-      id: 1,
-      image: "https://via.placeholder.com/300",
-      likes: 0,
-      tags: ["art", "design"],
-    },
-    {
-      id: 1,
-      image: "https://via.placeholder.com/300",
-      likes: 0,
-      tags: ["art", "design"],
-    },
-    {
-      id: 1,
-      image: "https://via.placeholder.com/300",
-      likes: 0,
-      tags: ["art", "design"],
-    },
-    {
-      id: 1,
-      image: "https://via.placeholder.com/300",
-      likes: 0,
-      tags: ["art", "design"],
-    },
-    // ... more posts
+    // …
   ]);
-
   const [searchTag, setSearchTag] = useState("");
 
-  const handleLike = (id) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    fetch("http://localhost:5000/auth/profile", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch profile");
+        return res.json();
+      })
+      .then((data) => {
+        setUser((prev) => ({
+          ...prev,
+          fullName: data.user.fullName,
+          email: data.user.email,
+          role: data.user.role || prev.role,
+          avatarUrl: data.user.avatarUrl || prev.avatarUrl,
+        }));
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
+  // Upload handler (folosit de modal)
+  const handleAvatarUpload = (file) => {
+    if (!file) return;
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("avatar", file);
+    fetch("http://localhost:5000/auth/profile/avatar", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Avatar upload failed");
+        return res.json();
+      })
+      .then(({ avatarUrl }) => {
+        setUser((u) => ({ ...u, avatarUrl }));
+        closeModal();
+      })
+      .catch((err) => console.error(err));
+  };
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const onFileChange = (e) => {
+    const file = e.target.files[0];
+    handleAvatarUpload(file);
+  };
+
+  const handleLike = (id) =>
+    setPosts((prev) =>
+      prev.map((post) =>
         post.id === id ? { ...post, likes: post.likes + 1 } : post
       )
     );
-  };
 
   const filteredPosts = posts.filter((post) =>
     post.tags.some((tag) => tag.toLowerCase().includes(searchTag.toLowerCase()))
@@ -73,9 +93,16 @@ const Profile = () => {
     <div className="profile-container">
       <header className="profile-header">
         <div className="user-info">
-          <img src={user.avatar} alt="avatar" className="avatar" />
+          {/* Avatar click deschide modal */}
+          <img
+            src={user.avatarUrl}
+            alt="avatar"
+            className="avatar"
+            onClick={openModal}
+            style={{ cursor: "pointer" }}
+          />
           <div className="details">
-            <h2 className="username">{user.name}</h2>
+            <h2 className="username">{user.fullName}</h2>
             <div className="sub-details">
               <span className="email">{user.email}</span>
               <span className="role-badge">{user.role}</span>
@@ -83,6 +110,36 @@ const Profile = () => {
           </div>
         </div>
       </header>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeModal}>
+              ×
+            </button>
+            <img
+              src={user.avatarUrl}
+              alt="Current avatar"
+              className="modal-avatar"
+            />
+            <button
+              className="change-photo-btn"
+              onClick={() => fileInputRef.current.click()}
+            >
+              Change photo
+            </button>
+            {/* Hidden file input */}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={onFileChange}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="search-bar">
         <input
@@ -123,7 +180,6 @@ const Profile = () => {
           </div>
         ))}
       </div>
-
       <button className="view-more-btn">
         View more ({posts.length - filteredPosts.length})
       </button>

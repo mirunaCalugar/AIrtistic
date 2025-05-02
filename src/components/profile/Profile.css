@@ -206,3 +206,63 @@
     padding: 10px 20px;
   }
 }
+/* Overlay semi-transparent */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Conținutul modalului */
+.modal-content {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  position: relative;
+  width: 320px;
+
+  /* nou */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Buton de închidere */
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Imaginea mare din modal */
+.modal-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+/* Butonul Change Photo */
+.change-photo-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #7a73ff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+
+  /* nou */
+  margin-top: 0.5rem;
+}
