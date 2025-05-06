@@ -1,60 +1,74 @@
+// src/components/Profile.jsx
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 
+const BACKEND_URL = "http://localhost:5000"; // adaptează dacă ai env var
+
 const Profile = () => {
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+
   const [user, setUser] = useState({
-    fullName: "Brenda Gardner",
-    email: "example@email.com",
-    role: "Top Artist",
-    avatarUrl: "https://via.placeholder.com/80",
+    fullName: "",
+    email: "",
+    role: "",
+    avatarUrl: "/user.png",
   });
+
   const [posts, setPosts] = useState([
     {
       id: 1,
-      image: "https://via.placeholder.com/300",
+      image: "/user.png",
       likes: 0,
       tags: ["art", "design"],
     },
-    // …
+    // … alte postări
   ]);
+
   const [searchTag, setSearchTag] = useState("");
-
-  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const fileInputRef = useRef(null);
 
+  // Fetch profil la mount
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return;
-    fetch("http://localhost:5000/auth/profile", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    fetch(`${BACKEND_URL}/auth/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch profile");
         return res.json();
       })
-      .then((data) => {
+      .then(({ user }) => {
         setUser((prev) => ({
           ...prev,
-          fullName: data.user.fullName,
-          email: data.user.email,
-          role: data.user.role || prev.role,
-          avatarUrl: data.user.avatarUrl || prev.avatarUrl,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+          avatarUrl: user.avatarUrl
+            ? `${BACKEND_URL}${user.avatarUrl}`
+            : prev.avatarUrl,
         }));
       })
-      .catch((err) => console.error(err));
-  }, []);
+      .catch((err) => {
+        console.error(err);
+        // dacă vrei, poți redirect /logout
+      });
+  }, [navigate]);
 
-  // Upload handler (folosit de modal)
+  // Upload handler
   const handleAvatarUpload = (file) => {
     if (!file) return;
     const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("avatar", file);
-    fetch("http://localhost:5000/auth/profile/avatar", {
+
+    fetch(`${BACKEND_URL}/auth/profile/avatar`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
@@ -64,25 +78,23 @@ const Profile = () => {
         return res.json();
       })
       .then(({ avatarUrl }) => {
-        setUser((u) => ({ ...u, avatarUrl }));
+        setUser((u) => ({
+          ...u,
+          avatarUrl: `${BACKEND_URL}${avatarUrl}`,
+        }));
         closeModal();
       })
-      .catch((err) => console.error(err));
+      .catch(console.error);
   };
 
+  // Handlers
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-
-  const onFileChange = (e) => {
-    const file = e.target.files[0];
-    handleAvatarUpload(file);
-  };
+  const onFileChange = (e) => handleAvatarUpload(e.target.files[0]);
 
   const handleLike = (id) =>
     setPosts((prev) =>
-      prev.map((post) =>
-        post.id === id ? { ...post, likes: post.likes + 1 } : post
-      )
+      prev.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p))
     );
 
   const filteredPosts = posts.filter((post) =>
@@ -93,16 +105,14 @@ const Profile = () => {
     <div className="profile-container">
       <header className="profile-header">
         <div className="user-info">
-          {/* Avatar click deschide modal */}
           <img
             src={user.avatarUrl}
-            alt="avatar"
+            alt="Avatar"
             className="avatar"
             onClick={openModal}
-            style={{ cursor: "pointer" }}
           />
           <div className="details">
-            <h2 className="username">{user.fullName}</h2>
+            <h2 className="username">{user.fullName || "–"}</h2>
             <div className="sub-details">
               <span className="email">{user.email}</span>
               <span className="role-badge">{user.role}</span>
@@ -111,7 +121,7 @@ const Profile = () => {
         </div>
       </header>
 
-      {/* Modal */}
+      {/* Modal pentru schimbarea avatarului */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -129,7 +139,6 @@ const Profile = () => {
             >
               Change photo
             </button>
-            {/* Hidden file input */}
             <input
               type="file"
               accept="image/*"
@@ -141,6 +150,7 @@ const Profile = () => {
         </div>
       )}
 
+      {/* Căutare tag-uri */}
       <div className="search-bar">
         <input
           type="text"
@@ -155,6 +165,7 @@ const Profile = () => {
         </div>
       </div>
 
+      {/* Postări */}
       <div className="posts-container">
         {filteredPosts.map((post) => (
           <div key={post.id} className="post-card">
@@ -180,6 +191,7 @@ const Profile = () => {
           </div>
         ))}
       </div>
+
       <button className="view-more-btn">
         View more ({posts.length - filteredPosts.length})
       </button>

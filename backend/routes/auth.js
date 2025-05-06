@@ -1,12 +1,8 @@
 import express from "express";
-import {
-  signUp,
-  login,
-  getProfile,
-  updateProfile,
-} from "../controllers/authController.js";
+import { signUp, login } from "../controllers/authController.js";
 import { requireAuth } from "../middleware/auth.js";
 import { uploadAvatar } from "../middleware/upload.js";
+import { getProfile, updateProfile } from "../controllers/profileController.js";
 
 const router = express.Router();
 
