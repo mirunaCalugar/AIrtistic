@@ -1,62 +1,188 @@
-import React from "react";
+import React, { useState } from "react";
 import "./ChatAI.css";
 
 export default function ChatAI() {
+  // Exemple de prompturi predefinite
   const examples = [
-    { icon: "?", text: "Industrial Revolution's impact on geopolitics." },
-    { icon: "✏️", text: "Create an HD wallpaper cat licking paw images." },
-    { icon: "</>", text: "HTTP request in JavaScript?" },
-    { icon: "📍", text: "Tell me about the history of the Eiffel Tower." },
-    { icon: "💡", text: "Write a short poem about the beauty of nature." },
+    {
+      icon: "?",
+      text: "Industrial Revolution's impact on geopolitics.",
+      prompt: "What was the Industrial Revolution's impact on geopolitics?",
+    },
+    {
+      icon: "✏️",
+      text: "HD wallpaper of a cat licking its paw.",
+      prompt: "Create an HD wallpaper of a cat licking its paw.",
+    },
+    {
+      icon: "</>",
+      text: "HTTP request în JavaScript?",
+      prompt: "How do I make an HTTP request in JavaScript?",
+    },
+    {
+      icon: "📍",
+      text: "Istoria Turnului Eiffel.",
+      prompt: "Tell me about the history of the Eiffel Tower.",
+    },
+    {
+      icon: "💡",
+      text: "Poem despre natură.",
+      prompt: "Write a short poem about the beauty of nature.",
+    },
   ];
-  const history = [
-    { title: "Helpful AI Ready", when: "Today" },
-    { title: "Greenhouse Effect Expla…", when: "Today" },
-    { title: "Movie Streaming Help", when: "Today" },
-    { title: "Web Design Workflow", when: "Previous 7 days" },
-    { title: "Photo generation", when: "Previous 7 days" },
-    { title: "Cats eat grass", when: "Previous 7 days" },
-    { title: "Weather Dynamics", when: "Previous 7 days" },
-  ];
+
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [history, setHistory] = useState([
+    // { id: 1, title: "Prima sesiune", when: "Today" }
+  ]);
+
+  const sendMessage = async (overridePrompt) => {
+    const prompt = overridePrompt ?? input;
+    if (!prompt.trim()) return;
+
+    // 1️⃣ Adaugă bulă user
+    setMessages((prev) => [...prev, { from: "user", text: prompt }]);
+    setInput("");
+
+    try {
+      // 2️⃣ Apelează backend-ul
+      const resp = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: prompt }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Server error");
+
+      // 3️⃣ Adaugă bulă bot text
+      if (data.reply) {
+        setMessages((prev) => [...prev, { from: "bot", text: data.reply }]);
+      }
+      // 4️⃣ Adaugă bulă bot imagine
+      if (data.imageUrl) {
+        setMessages((prev) => [
+          ...prev,
+          { from: "bot", imageUrl: data.imageUrl },
+        ]);
+      }
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        { from: "bot", text: "Eroare de rețea sau server." },
+      ]);
+    }
+  };
+
+  const startNewChat = () => {
+    setMessages([]);
+    setInput("");
+  };
+
+  const loadChat = (id) => {
+    // TODO: încarcă sesiune din backend/localStorage
+    alert(`Load chat ${id} nu e încă implementat.`);
+  };
+
+  const handleExampleClick = (prompt) => {
+    sendMessage(prompt);
+  };
 
   return (
     <div className="chat-app">
+      {/* Sidebar */}
       <aside className="sidebar">
         <h2>AIChat</h2>
-        <button className="new-chat">+ New chat</button>
+        <button className="new-chat" onClick={startNewChat}>
+          + New chat
+        </button>
         <div className="history">
-          {history.map((item, i) => (
-            <div key={i} className="history-item">
-              <span>{item.title}</span>
-              <small>{item.when}</small>
-            </div>
-          ))}
+          <h3>Today</h3>
+          {history
+            .filter((h) => h.when === "Today")
+            .map((item, i) => (
+              <div
+                key={i}
+                className="history-item"
+                onClick={() => loadChat(item.id)}
+              >
+                <span>{item.title}</span>
+                <small>{item.when}</small>
+              </div>
+            ))}
+          <h3>Previous 7 days</h3>
+          {history
+            .filter((h) => h.when !== "Today")
+            .map((item, i) => (
+              <div
+                key={i}
+                className="history-item"
+                onClick={() => loadChat(item.id)}
+              >
+                <span>{item.title}</span>
+                <small>{item.when}</small>
+              </div>
+            ))}
         </div>
-        {/* <div className="upgrade">
-          <img src="https://via.placeholder.com/40" alt="User avatar" />
-          <div>
-            <strong>Emily</strong>
-            <button className="upgrade-btn">Upgrade to Pro</button>
-          </div>
-        </div> */}
       </aside>
+
+      {/* Main chat area */}
       <main className="main-area">
-        <h1>Ask everything you want!</h1>
-        <div className="examples">
-          {examples.map((ex, i) => (
-            <div key={i} className="example-card">
-              <span className="icon">{ex.icon}</span>
-              <p>{ex.text}</p>
+        {messages.length === 0 ? (
+          <>
+            <h1>Ask everything you want!</h1>
+            <div className="examples">
+              {examples.map((ex, i) => (
+                <div
+                  key={i}
+                  className="example-card"
+                  onClick={() => handleExampleClick(ex.prompt)}
+                >
+                  <span className="icon">{ex.icon}</span>
+                  <p>{ex.text}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        ) : (
+          <div className="chat-window">
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`message ${m.from === "user" ? "user" : "bot"}`}
+              >
+                {m.text && <p>{m.text}</p>}
+                {m.imageUrl && (
+                  <img
+                    src={m.imageUrl}
+                    alt="Generated by AI"
+                    style={{
+                      maxWidth: "100%",
+                      borderRadius: "8px",
+                      marginTop: "8px",
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Input bar */}
         <div className="input-bar">
           <input
             type="text"
-            placeholder="Create an HD wallpaper cat licking paw images"
+            placeholder="Scrie mesajul..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
-          <button className="send-btn">➤</button>
+          <button className="send-btn" onClick={() => sendMessage()}>
+            ➤
+          </button>
         </div>
+
         <small className="notice">
           StormBot may produce inaccurate information about people, places, or
           fact. <a href="#">Privacy Notice</a>
