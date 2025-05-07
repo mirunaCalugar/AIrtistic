@@ -19,53 +19,6 @@ const artistData = [
   { image: "src/assets/art2.jpg" },
   { image: "src/assets/art3.jpg" },
 ];
-// const authors = [
-//   {
-//     name: "Alexander Hughes",
-//     image: "src/assets/author1.jpg",
-//     isVerified: true,
-//   },
-//   {
-//     name: "Christopher Brown",
-//     image: "src/assets/author1.jpg",
-//     isVerified: false,
-//   },
-//   {
-//     name: "Sophia Anderson",
-//     image: "src/assets/author1.jpg",
-//     isVerified: false,
-//   },
-//   {
-//     name: "Sophia Anderson",
-//     image: "src/assets/author1.jpg",
-//     isVerified: false,
-//   },
-//   {
-//     name: "Sophia Anderson",
-//     image: "src/assets/author1.jpg",
-//     isVerified: false,
-//   },
-//   {
-//     name: "Sophia Anderson",
-//     image: "src/assets/author1.jpg",
-//     isVerified: false,
-//   },
-//   {
-//     name: "Sophia Anderson",
-//     image: "src/assets/author1.jpg",
-//     isVerified: false,
-//   },
-//   {
-//     name: "Sophia Anderson",
-//     image: "src/assets/author1.jpg",
-//     isVerified: false,
-//   },
-//   {
-//     name: "Sophia Anderson",
-//     image: "src/assets/author1.jpg",
-//     isVerified: false,
-//   },
-// ];
 
 const Explore = () => {
   const [authors, setAuthors] = useState([]);
@@ -149,9 +102,10 @@ const Explore = () => {
         </div>
 
         <div className="authors-carousel" ref={scrollAuthorsRef}>
-          {authors.map((author, idx) => (
+          {authors.map((author, id) => (
             <ArtistCard
               key={author.id}
+              id={author.id}
               name={author.name}
               image={
                 typeof author.image === "string" &&
