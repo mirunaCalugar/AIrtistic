@@ -64,6 +64,32 @@ app.get("/api/test-image", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.get("/api/download", async (req, res) => {
+  try {
+    const imageUrl = req.query.url;
+    const apiResp = await fetch(imageUrl);
+    if (!apiResp.ok)
+      return res.status(apiResp.status).send("Error fetching image");
+
+    const contentType = apiResp.headers.get("content-type"); // ex: "image/png"
+    // extragem extensia și normalizăm jpeg→jpg
+    let ext = contentType.split("/")[1];
+    if (ext === "jpeg") ext = "jpg";
+
+    const buffer = await apiResp.arrayBuffer();
+    res
+      .status(200)
+      .set({
+        "Content-Type": contentType,
+        // forțăm download și dăm extensia corectă
+        "Content-Disposition": `attachment; filename="ai-image.${ext}"`,
+      })
+      .send(Buffer.from(buffer));
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
 app.use(
   cors({
     origin: ["http://localhost:5173", "http://localhost:3000"],
