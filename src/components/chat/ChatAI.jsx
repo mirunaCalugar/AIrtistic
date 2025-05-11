@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./ChatAI.css";
+import PostModal from "../modals/PostModal";
 
 export default function ChatAI() {
   // Exemple de prompturi predefinite
@@ -35,8 +36,14 @@ export default function ChatAI() {
   const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Modal preview imagine
   const [showModal, setShowModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState(null);
+
+  // Modal postare
+  const [isPostModalOpen, setPostModalOpen] = useState(false);
+  const [pendingImage, setPendingImage] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem("chat-history");
@@ -46,20 +53,6 @@ export default function ChatAI() {
   useEffect(() => {
     localStorage.setItem("chat-history", JSON.stringify(history));
   }, [history]);
-
-  const handleSave = () => {
-    const proxyUrl = `http://localhost:5000/api/download?url=${encodeURIComponent(
-      modalImageUrl
-    )}`;
-    const a = document.createElement("a");
-    a.href = proxyUrl;
-    let ext = modalImageUrl.split(".").pop().split("?")[0];
-    if (ext === "jpeg") ext = "jpg";
-    a.download = `ai-image.${ext}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
 
   const sendMessage = async (overridePrompt) => {
     const prompt = overridePrompt ?? input;
@@ -79,13 +72,15 @@ export default function ChatAI() {
       if (!resp.ok) throw new Error(text || "Server error");
       const data = JSON.parse(text);
 
-      if (data.reply)
+      if (data.reply) {
         setMessages((prev) => [...prev, { from: "bot", text: data.reply }]);
-      if (data.imageUrl)
+      }
+      if (data.imageUrl) {
         setMessages((prev) => [
           ...prev,
           { from: "bot", imageUrl: data.imageUrl },
         ]);
+      }
 
       setHistory((prev) => [
         ...prev,
@@ -110,19 +105,42 @@ export default function ChatAI() {
   const loadChat = (id) => alert(`Load chat ${id} nu e încă implementat.`);
   const handleExampleClick = (prompt) => sendMessage(prompt);
 
+  // Preview modal handlers
   const openModal = (url) => {
     setModalImageUrl(url);
     setShowModal(true);
   };
-
   const closeModal = () => {
     setShowModal(false);
     setModalImageUrl(null);
   };
 
-  const handlePost = () => {
-    console.log("Posting image:", modalImageUrl);
-    closeModal();
+  // Save imagine
+  const handleSave = () => {
+    const proxyUrl = `http://localhost:5000/api/download?url=${encodeURIComponent(
+      modalImageUrl
+    )}`;
+    const a = document.createElement("a");
+    a.href = proxyUrl;
+    let ext = modalImageUrl.split(".").pop().split("?")[0];
+    if (ext === "jpeg") ext = "jpg";
+    a.download = `ai-image.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  // Activa modal postare
+  const onPostClick = (url) => {
+    setPendingImage(url);
+    setShowModal(false);
+    setPostModalOpen(true);
+  };
+
+  const handlePostCompleted = (newPost) => {
+    // Poți actualiza un feed local sau redirect
+    console.log("Post nou creat:", newPost);
+    setPostModalOpen(false);
   };
 
   return (
@@ -220,6 +238,7 @@ export default function ChatAI() {
         </small>
       </main>
 
+      {/* Preview Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -230,7 +249,10 @@ export default function ChatAI() {
               <button onClick={handleSave} className="btn save-btn">
                 Salvează
               </button>
-              <button onClick={handlePost} className="btn post-btn">
+              <button
+                onClick={() => onPostClick(modalImageUrl)}
+                className="btn post-btn"
+              >
                 Postează
               </button>
               <button onClick={closeModal} className="btn cancel-btn">
@@ -240,6 +262,14 @@ export default function ChatAI() {
           </div>
         </div>
       )}
+
+      {/* Post Modal */}
+      <PostModal
+        isOpen={isPostModalOpen}
+        imageUrl={pendingImage}
+        onClose={() => setPostModalOpen(false)}
+        onPosted={handlePostCompleted}
+      />
     </div>
   );
 }

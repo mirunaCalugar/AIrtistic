@@ -17,12 +17,12 @@ router.post("/", async (req, res) => {
   try {
     // 1️⃣ Generăm răspunsul text
     const chatCompletion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4.1",
       messages: [
         {
           role: "system",
           content:
-            "Ești un asistent prietenos care poate genera atât text, cât și imagini.",
+            "Ești un asistent prietenos care poate genera atât text, cât și imagini artistice. Te rog să răspunzi la întrebările utilizatorului și să creezi o imagine pe baza promptului dat.",
         },
         { role: "user", content: message },
       ],

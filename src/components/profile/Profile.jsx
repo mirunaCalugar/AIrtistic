@@ -2,12 +2,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
+import PostModal from "../modals/PostModal";
 
-const BACKEND_URL = "http://localhost:5000"; // adaptează dacă ai env var
+const BACKEND_URL = "http://localhost:5000";
 
 const Profile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const postFileInputRef = useRef(null);
 
   const [user, setUser] = useState({
     fullName: "",
@@ -15,21 +17,15 @@ const Profile = () => {
     role: "",
     avatarUrl: "/user.png",
   });
-
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      image: "/user.png",
-      likes: 0,
-      tags: ["art", "design"],
-    },
-    // … alte postări
-  ]);
-
+  const [posts, setPosts] = useState([]);
   const [searchTag, setSearchTag] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch profil la mount
+  // Modals state
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [newImageUrl, setNewImageUrl] = useState("");
+
+  // Fetch profile and posts on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -37,6 +33,7 @@ const Profile = () => {
       return;
     }
 
+    // Load profile
     fetch(`${BACKEND_URL}/auth/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -44,7 +41,7 @@ const Profile = () => {
         if (!res.ok) throw new Error("Failed to fetch profile");
         return res.json();
       })
-      .then(({ user }) => {
+      .then(({ user }) =>
         setUser((prev) => ({
           ...prev,
           fullName: user.fullName,
@@ -53,15 +50,23 @@ const Profile = () => {
           avatarUrl: user.avatarUrl
             ? `${BACKEND_URL}${user.avatarUrl}`
             : prev.avatarUrl,
-        }));
+        }))
+      )
+      .catch(console.error);
+
+    // Load posts
+    fetch(`${BACKEND_URL}/api/posts`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch posts");
+        return res.json();
       })
-      .catch((err) => {
-        console.error(err);
-        // dacă vrei, poți redirect /logout
-      });
+      .then((data) => setPosts(data.posts))
+      .catch(console.error);
   }, [navigate]);
 
-  // Upload handler
+  // Avatar upload
   const handleAvatarUpload = (file) => {
     if (!file) return;
     const token = localStorage.getItem("token");
@@ -78,27 +83,33 @@ const Profile = () => {
         return res.json();
       })
       .then(({ avatarUrl }) => {
-        setUser((u) => ({
-          ...u,
-          avatarUrl: `${BACKEND_URL}${avatarUrl}`,
-        }));
-        closeModal();
+        setUser((u) => ({ ...u, avatarUrl: `${BACKEND_URL}${avatarUrl}` }));
+        setIsAvatarModalOpen(false);
       })
       .catch(console.error);
   };
 
-  // Handlers
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-  const onFileChange = (e) => handleAvatarUpload(e.target.files[0]);
+  // New post handlers
+  const handleNewFile = (file) => {
+    if (!file) return;
+    setNewImageUrl(URL.createObjectURL(file));
+    setIsPostModalOpen(true);
+  };
+  const onAvatarFileChange = (e) => handleAvatarUpload(e.target.files[0]);
+  const onNewFileChange = (e) => handleNewFile(e.target.files[0]);
+  const handlePostAdded = (newPost) => setPosts((prev) => [newPost, ...prev]);
 
+  // Like handler
   const handleLike = (id) =>
     setPosts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p))
     );
 
+  // Filter posts by tag name
   const filteredPosts = posts.filter((post) =>
-    post.tags.some((tag) => tag.toLowerCase().includes(searchTag.toLowerCase()))
+    post.tags.some((tagObj) =>
+      tagObj.name.toLowerCase().includes(searchTag.toLowerCase())
+    )
   );
 
   return (
@@ -109,7 +120,7 @@ const Profile = () => {
             src={user.avatarUrl}
             alt="Avatar"
             className="avatar"
-            onClick={openModal}
+            onClick={() => setIsAvatarModalOpen(true)}
           />
           <div className="details">
             <h2 className="username">{user.fullName || "–"}</h2>
@@ -121,11 +132,17 @@ const Profile = () => {
         </div>
       </header>
 
-      {/* Modal pentru schimbarea avatarului */}
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
+      {/* Avatar modal */}
+      {isAvatarModalOpen && (
+        <div
+          className="modal-overlay"
+          onClick={() => setIsAvatarModalOpen(false)}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeModal}>
+            <button
+              className="modal-close"
+              onClick={() => setIsAvatarModalOpen(false)}
+            >
               ×
             </button>
             <img
@@ -144,13 +161,34 @@ const Profile = () => {
               accept="image/*"
               ref={fileInputRef}
               style={{ display: "none" }}
-              onChange={onFileChange}
+              onChange={onAvatarFileChange}
             />
           </div>
         </div>
       )}
 
-      {/* Căutare tag-uri */}
+      {/* Add post UI */}
+      <button
+        className="view-more-btn"
+        onClick={() => postFileInputRef.current.click()}
+      >
+        Adaugă postare
+      </button>
+      <input
+        type="file"
+        accept="image/*"
+        ref={postFileInputRef}
+        style={{ display: "none" }}
+        onChange={onNewFileChange}
+      />
+      <PostModal
+        isOpen={isPostModalOpen}
+        onClose={() => setIsPostModalOpen(false)}
+        imageUrl={newImageUrl}
+        onPosted={handlePostAdded}
+      />
+
+      {/* Search bar */}
       <div className="search-bar">
         <input
           type="text"
@@ -165,16 +203,20 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Postări */}
+      {/* Posts list */}
       <div className="posts-container">
         {filteredPosts.map((post) => (
           <div key={post.id} className="post-card">
-            <img src={post.image} alt="Post" className="post-image" />
+            <img
+              src={post.image || post.image_url}
+              alt="Post"
+              className="post-image"
+            />
             <div className="post-info">
               <div className="tags">
-                {post.tags.map((tag) => (
-                  <span key={tag} className="tag">
-                    #{tag}
+                {post.tags.map((tagObj) => (
+                  <span key={tagObj.id} className="tag">
+                    #{tagObj.name}
                   </span>
                 ))}
               </div>

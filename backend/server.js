@@ -10,7 +10,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import artistRoutes from "./routes/artists.js";
 import chatRoutes from "./routes/chat.js";
-
+import postsRouter from "./routes/posts.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -39,13 +39,11 @@ app.use(
   express.static(path.join(process.cwd(), "uploads/avatars"))
 );
 
-// (opțional) dacă vrei să expui tot uploads/
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 // 3) rutele tale de autentificare (+ upload avatar)
 app.use("/auth", authRoutes);
 app.use("/artists", artistRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/posts", postsRouter);
 
 // 4) sanity check
 app.get("/", (req, res) => {
