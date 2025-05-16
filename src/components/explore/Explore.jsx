@@ -1,60 +1,20 @@
-// Explore.jsx
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./Explore.css";
 import ArtistChoice from "./ArtistChoice";
 import ArtistCard from "./ArtistCard";
-import { useState, useEffect } from "react";
+
 const BACKEND_URL = "http://localhost:5000";
-const artistData = [
-  { image: "src/assets/art1.jpg" },
-  { image: "src/assets/art2.jpg" },
-  { image: "src/assets/art3.jpg" },
-  { image: "src/assets/art1.jpg" },
-  { image: "src/assets/art2.jpg" },
-  { image: "src/assets/art3.jpg" },
-  { image: "src/assets/art1.jpg" },
-  { image: "src/assets/art2.jpg" },
-  { image: "src/assets/art3.jpg" },
-  { image: "src/assets/art1.jpg" },
-  { image: "src/assets/art2.jpg" },
-  { image: "src/assets/art3.jpg" },
-];
 
 const Explore = () => {
   const [authors, setAuthors] = useState([]);
+  const [posts, setPosts] = useState([]);
   const scrollRef = useRef(null);
-
-  const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 300, behavior: "smooth" });
-
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      if (scrollLeft + clientWidth >= scrollWidth - 10) {
-        setTimeout(() => {
-          scrollRef.current.scrollTo({ left: 0, behavior: "auto" });
-        }, 300);
-      }
-    }
-  };
   const scrollAuthorsRef = useRef(null);
 
-  const scrollAuthorsRight = () => {
-    if (scrollAuthorsRef.current) {
-      scrollAuthorsRef.current.scrollBy({ left: 300, behavior: "smooth" });
-
-      // Loop reset
-      const { scrollLeft, scrollWidth, clientWidth } = scrollAuthorsRef.current;
-      if (scrollLeft + clientWidth >= scrollWidth - 10) {
-        setTimeout(() => {
-          scrollAuthorsRef.current.scrollTo({ left: 0, behavior: "auto" });
-        }, 300);
-      }
-    }
-  };
+  // Fetch rising authors
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return console.error("No token for rising authors");
-
+    if (!token) return;
     fetch(`${BACKEND_URL}/artists`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -65,51 +25,86 @@ const Explore = () => {
       .then((data) => setAuthors(data.authors))
       .catch(console.error);
   }, []);
+
+  // Fetch all posts
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    fetch(`${BACKEND_URL}/api/posts/all`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load posts");
+        return res.json();
+      })
+      .then((data) => setPosts(data.posts))
+      .catch(console.error);
+  }, []);
+
+  // Scroll logic
+  const scrollRight = (ref) => {
+    if (!ref.current) return;
+    const { scrollLeft, clientWidth, scrollWidth } = ref.current;
+    ref.current.scrollBy({ left: clientWidth, behavior: "smooth" });
+    if (scrollLeft + clientWidth >= scrollWidth - 10) {
+      setTimeout(
+        () => ref.current.scrollTo({ left: 0, behavior: "auto" }),
+        300
+      );
+    }
+  };
+
   return (
     <div className="explore-container">
-      {/* Header */}
       <div className="explore-header">
         <h1>🧭 Discover</h1>
         <p>Step into a new zone, join a new conversation.</p>
       </div>
 
-      {/* Search */}
       <div className="explore-search">
         <input type="text" placeholder="Search..." />
-        <button className="explore-dropdown">Articles ▼</button>
+        <button className="explore-dropdown">Search</button>
       </div>
 
-      {/* Artists' choice with carousel */}
+      {/* Artists' choice — random posts thumbnails */}
       <div className="section">
         <div className="artists-header">
           <h3>Artists' choice</h3>
-          <button className="scroll-btn" onClick={scrollRight}>
+          <button className="scroll-btn" onClick={() => scrollRight(scrollRef)}>
             ▶
           </button>
         </div>
         <div className="artists-carousel" ref={scrollRef}>
-          {artistData.map((artist, index) => (
-            <ArtistChoice key={index} image={artist.image} />
-          ))}
+          {posts.length === 0 && <p>Loading posts...</p>}
+          {posts
+            .filter((p) => p.image && p.image.startsWith("/uploads/posts"))
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 12)
+            .map((p) => (
+              <ArtistChoice key={p.id} image={`${BACKEND_URL}${p.image}`} />
+            ))}
         </div>
       </div>
+
+      {/* Rising authors */}
       <div className="section">
         <div className="authors-header">
           <h3>Rising authors</h3>
-          <button className="scroll-btn" onClick={scrollAuthorsRight}>
+          <button
+            className="scroll-btn"
+            onClick={() => scrollRight(scrollAuthorsRef)}
+          >
             ▶
           </button>
         </div>
-
         <div className="authors-carousel" ref={scrollAuthorsRef}>
-          {authors.map((author, id) => (
+          {authors.map((author) => (
             <ArtistCard
               key={author.id}
               id={author.id}
               name={author.name}
               image={
-                typeof author.image === "string" &&
-                author.image.startsWith("/uploads")
+                author.image && author.image.startsWith("/uploads/")
                   ? `${BACKEND_URL}${author.image}`
                   : author.image || "/user.png"
               }

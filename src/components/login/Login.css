@@ -6,7 +6,7 @@
 
 .login-left {
   flex: 1;
-  background-color: #7f6eff;
+  background-color: #6c73ff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -22,7 +22,7 @@
 
 .login-right {
   flex: 1;
-  background-color: #7f6eff;
+  background-color: #6c73ff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,7 +88,7 @@
 .login-btn {
   width: 100%;
   padding: 12px;
-  background-color: #7f6eff;
+  background-color: #6c73ff;
   color: #fff;
   border: none;
   border-radius: 8px;

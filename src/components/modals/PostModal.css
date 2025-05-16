@@ -1,30 +1,178 @@
+/* ===== Modern Modal Styles ===== */
+:root {
+  --modal-bg: #ffffff;
+  --overlay-bg: rgba(0, 0, 0, 0.6);
+  --primary: #7b5fff;
+  --primary-hover: #6a4ed8;
+  --text-color: #7b5fff;
+  --border-radius: 12px;
+  --spacing: 16px;
+  --transition-fast: 0.2s ease;
+  --font-family: "Bevan", sans-serif;
+}
+
+/* Fullscreen overlay with blur backdrop */
 .modal-overlay {
-  /* la fel ca înainte */
-}
-.modal-content {
-  padding: 24px;
-  border-radius: 8px;
-  background: #fff;
-  max-width: 500px;
-  margin: auto;
-}
-.modal-preview {
-  width: 100%;
-  border-radius: 4px;
-  margin-bottom: 12px;
-}
-.post-form textarea {
-  width: 100%;
-  min-height: 80px;
-  margin-bottom: 8px;
-}
-.post-form input {
-  width: 100%;
-  margin-bottom: 16px;
-  padding: 8px;
-}
-.modal-actions {
+  position: fixed;
+  inset: 0;
   display: flex;
-  gap: 12px;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  background: var(--overlay-bg);
+  backdrop-filter: blur(4px);
+  padding: var(--spacing);
+  z-index: 1000;
+  font-family: var(--font-family);
+}
+
+/* Modal container with pop-in animation */
+.modal-content {
+  background: var(--modal-bg);
+  border-radius: var(--border-radius);
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), 0 6px 12px rgba(0, 0, 0, 0.08);
+  animation: popIn 0.3s var(--transition-fast) forwards;
+  font-family: var(--font-family);
+  color: var(--text-color);
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Header */
+.modal-content header {
+  padding: var(--spacing) var(--spacing) 0;
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* Body section with scroll */
+.modal-body {
+  padding: var(--spacing);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Preview image with subtle shadow */
+.modal-preview {
+  display: block;
+  margin: 0 auto var(--spacing);
+  max-width: 100%;
+  max-height: 280px;
+  border-radius: 8px;
+  object-fit: contain;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Form layout */
+.modal-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: var(--spacing);
+}
+
+/* Modern input & textarea */
+.modal-form input,
+.modal-form textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  background: #f5f5f7;
+  border: 1px solid var(--primary);
+  border-radius: var(--border-radius);
+  transition: border-color var(--transition-fast),
+    background var(--transition-fast);
+  outline: none;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: var(--font-family);
+}
+
+.modal-form input:focus,
+.modal-form textarea:focus {
+  background: #fff;
+  border-color: var(--primary);
+}
+
+.modal-form textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+.modal-form input::placeholder,
+.modal-form textarea::placeholder {
+  color: var(--primary-hover);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Footer actions */
+.modal-footer {
+  padding: var(--spacing);
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing);
+  background: #fafafa;
+}
+
+.modal-footer button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  font-family: var(--font-family);
+}
+
+.modal-footer .cancel-btn {
+  background: transparent;
+  color: #777;
+}
+
+.modal-footer .cancel-btn:hover {
+  background: #f0f0f0;
+}
+
+.modal-footer .publish-btn {
+  background: var(--primary);
+  color: #fff;
+}
+
+.modal-footer .publish-btn:hover {
+  background: var(--primary-hover);
+}
+.post-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+}
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .modal-content {
+    max-width: 100%;
+  }
+  .modal-body {
+    padding: 12px;
+  }
+  .modal-footer {
+    padding: 12px;
+  }
 }

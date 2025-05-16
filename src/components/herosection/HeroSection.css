@@ -54,6 +54,10 @@ h1 {
   z-index: 1;
   color: aliceblue;
 }
+.hero-image button:hover {
+  background-color: #6c73ff;
+  box-shadow: 0 0 20px #6c5ce7, 0 0 40px #6c5ce7, 0 0 80px #6c5ce7;
+}
 
 button::before,
 button::after {
@@ -70,12 +74,12 @@ button::after {
 
 button::before {
   left: -10px;
-  background: #bf94f0;
+  /* background: #bf94f0; */
 }
 
 button::after {
   right: -10px;
-  background: #8e6ed9;
+  /* background: #8e6ed9; */
 }
 
 button:hover::before,

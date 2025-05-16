@@ -43,7 +43,7 @@ export default function ChatAI() {
 
   // Modal postare
   const [isPostModalOpen, setPostModalOpen] = useState(false);
-  const [pendingImage, setPendingImage] = useState("");
+  const [pendingFile, setPendingFile] = useState(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("chat-history");
@@ -81,31 +81,26 @@ export default function ChatAI() {
           { from: "bot", imageUrl: data.imageUrl },
         ]);
       }
-
-      setHistory((prev) => [
-        ...prev,
-        { id: Date.now(), title: prompt.slice(0, 20) + "...", when: "Today" },
-      ]);
+      if (data.history) setHistory(data.history);
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error(err);
       setMessages((prev) => [
         ...prev,
-        { from: "bot", text: "Eroare de rețea sau server: " + err.message },
+        { from: "bot", text: "Eroare la server: " + err.message },
       ]);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const startNewChat = () => {
     setMessages([]);
-    setInput("");
+    setHistory([]);
   };
 
   const loadChat = (id) => alert(`Load chat ${id} nu e încă implementat.`);
   const handleExampleClick = (prompt) => sendMessage(prompt);
 
-  // Preview modal handlers
   const openModal = (url) => {
     setModalImageUrl(url);
     setShowModal(true);
@@ -115,7 +110,6 @@ export default function ChatAI() {
     setModalImageUrl(null);
   };
 
-  // Save imagine
   const handleSave = () => {
     const proxyUrl = `http://localhost:5000/api/download?url=${encodeURIComponent(
       modalImageUrl
@@ -130,17 +124,27 @@ export default function ChatAI() {
     document.body.removeChild(a);
   };
 
-  // Activa modal postare
-  const onPostClick = (url) => {
-    setPendingImage(url);
+  const onPostClick = async (url) => {
     setShowModal(false);
-    setPostModalOpen(true);
+    try {
+      const proxyUrl = `http://localhost:5000/api/download?url=${encodeURIComponent(
+        url
+      )}`;
+      const resp = await fetch(proxyUrl);
+      const blob = await resp.blob();
+      const file = new File([blob], "ai-generated.png", { type: blob.type });
+      setPendingFile(file);
+      setPostModalOpen(true);
+    } catch (err) {
+      console.error("Error preparing post file:", err);
+      alert("Nu s-a putut pregăti imaginea pentru postare.");
+    }
   };
 
   const handlePostCompleted = (newPost) => {
-    // Poți actualiza un feed local sau redirect
     console.log("Post nou creat:", newPost);
     setPostModalOpen(false);
+    setPendingFile(null);
   };
 
   return (
@@ -183,7 +187,7 @@ export default function ChatAI() {
       <main className="main-area">
         {messages.length === 0 ? (
           <>
-            <h1>Ask everything you want!</h1>
+            <h1 onClick={startNewChat}>Ask everything you want!</h1>
             <div className="examples">
               {examples.map((ex, i) => (
                 <div
@@ -197,23 +201,23 @@ export default function ChatAI() {
               ))}
             </div>
           </>
-        ) : (
-          <div className="chat-window">
-            {messages.map((m, i) => (
-              <div key={i} className={`message ${m.from}`}>
-                {m.text && <p>{m.text}</p>}
-                {m.imageUrl && (
-                  <img
-                    src={m.imageUrl}
-                    alt="Generated"
-                    className="chat-image"
-                    onClick={() => openModal(m.imageUrl)}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        ) : null}
+
+        <div className="chat-window">
+          {messages.map((m, i) => (
+            <div key={i} className={`message ${m.from}`}>
+              {m.text && <p>{m.text}</p>}
+              {m.imageUrl && (
+                <img
+                  src={m.imageUrl}
+                  alt="Generated"
+                  className="chat-image"
+                  onClick={() => openModal(m.imageUrl)}
+                />
+              )}
+            </div>
+          ))}
+        </div>
 
         <div className="input-bar">
           <input
@@ -266,7 +270,7 @@ export default function ChatAI() {
       {/* Post Modal */}
       <PostModal
         isOpen={isPostModalOpen}
-        imageUrl={pendingImage}
+        file={pendingFile}
         onClose={() => setPostModalOpen(false)}
         onPosted={handlePostCompleted}
       />

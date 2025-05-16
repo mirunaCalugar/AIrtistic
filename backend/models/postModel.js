@@ -58,3 +58,26 @@ export async function getPostsByUser(userId) {
   );
   return rows;
 }
+export async function getAllPosts() {
+  const { rows } = await db.query(
+    `
+    SELECT
+      p.id,
+      p.user_id,
+      p.image_url        AS image,
+      p.description,
+      p.created_at,
+      COALESCE(
+        json_agg(json_build_object('id', t.id, 'name', t.name))
+        FILTER (WHERE t.id IS NOT NULL),
+        '[]'
+      ) AS tags
+    FROM posts p
+    LEFT JOIN post_tags pt ON p.id = pt.post_id
+    LEFT JOIN tags t ON t.id = pt.tag_id
+    GROUP BY p.id
+    ORDER BY p.created_at DESC
+    `
+  );
+  return rows;
+}

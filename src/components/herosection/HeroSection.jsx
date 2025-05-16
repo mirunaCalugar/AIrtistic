@@ -14,7 +14,9 @@ const HeroSection = () => {
         <h1>Unleash Your Creativity</h1>
         <h3>Transform ideas into stunning AI-generated art</h3>
         <div className="button-div">
-          <button onClick={handleClick}>Create Art Now</button>
+          <button className="btn-hero" onClick={handleClick}>
+            Create Art Now
+          </button>
         </div>
       </div>
     </section>

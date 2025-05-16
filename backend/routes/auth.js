@@ -18,4 +18,11 @@ router.post(
   uploadAvatar.single("avatar"),
   updateProfile
 );
+
+router.post(
+  "/profile/avatar",
+  requireAuth,
+  uploadAvatar.single("avatar"),
+  updateProfile
+);
 export default router;

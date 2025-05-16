@@ -38,6 +38,10 @@ app.use(
   "/uploads/avatars",
   express.static(path.join(process.cwd(), "uploads/avatars"))
 );
+app.use(
+  "/uploads/posts",
+  express.static(path.join(process.cwd(), "uploads/posts"))
+);
 
 // 3) rutele tale de autentificare (+ upload avatar)
 app.use("/auth", authRoutes);

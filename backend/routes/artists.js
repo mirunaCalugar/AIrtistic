@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.get("/", requireAuth, getRisingAuthors);
 router.get("/:id", getArtistById);
+router.get("/:id", requireAuth, getArtistById);
 //router.get("/", requireAuth, getAllArtists);
 
 export default router;
