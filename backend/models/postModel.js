@@ -81,3 +81,17 @@ export async function getAllPosts() {
   );
   return rows;
 }
+export async function updatePost(postId, description) {
+  const res = await db.query(
+    `UPDATE posts
+       SET description = $1
+     WHERE id = $2
+     RETURNING *`,
+    [description, postId]
+  );
+  return res.rows[0];
+}
+export async function deletePost(postId) {
+  await db.query(`DELETE FROM post_tags WHERE post_id = $1`, [postId]);
+  await db.query(`DELETE FROM posts WHERE id = $1`, [postId]);
+}

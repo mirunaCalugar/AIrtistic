@@ -32,7 +32,7 @@ body {
 /* Header with cover and avatar */
 .profile-header {
   position: relative;
-  background: var(--clr-primary);
+  background: rgba(108, 115, 255, 0.723);
   height: 200px;
   border-radius: var(--radius) var(--radius) 0 0;
 }

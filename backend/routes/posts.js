@@ -75,8 +75,11 @@ import {
   findOrCreateTag,
   linkPostTag,
   getPostsByUser,
-  getAllPosts, // adăugat importul pentru getAllPosts
+  getAllPosts,
+  updatePost,
+  deletePost,
 } from "../models/postModel.js";
+import { editPost, removePost } from "../controllers/postController.js";
 
 const router = express.Router();
 
@@ -137,5 +140,18 @@ router.get("/all", requireAuth, async (req, res) => {
       .json({ error: "Could not fetch posts from other users" });
   }
 });
+// UPDATE
+router.put(
+  "/:id",
+  requireAuth,
+  express.json(),
+  async (req, res) => await editPost(req, res)
+);
+// DELETE
+router.delete(
+  "/:id",
+  requireAuth,
+  async (req, res) => await removePost(req, res)
+);
 
 export default router;

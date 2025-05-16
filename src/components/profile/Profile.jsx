@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import PostModal from "../modals/PostModal";
+import EditPostModal from "../modals/EditPostModal";
 
 const BACKEND_URL = "http://localhost:5000";
 
@@ -17,7 +18,10 @@ const Profile = () => {
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("/user.png");
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -71,13 +75,16 @@ const Profile = () => {
   // Avatar handlers
   const onAvatarChange = (e) => {
     const file = e.target.files[0];
-    if (file) setAvatarUrl(URL.createObjectURL(file));
+    if (file) {
+      setAvatarUrl(URL.createObjectURL(file));
+      setSelectedAvatarFile(file);
+    }
   };
   const uploadAvatar = async () => {
     const file = fileInputRef.current.files[0];
-    if (!file) return;
+    if (!selectedAvatarFile) return;
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append("avatar", selectedAvatarFile);
     const token = localStorage.getItem("token");
     try {
       const res = await fetch(`${BACKEND_URL}/auth/profile/avatar`, {
@@ -140,19 +147,22 @@ const Profile = () => {
       {/* Avatar modal */}
       {isAvatarModalOpen && (
         <div
-          className="modal-overlay"
+          className="avatar-modal-overlay"
           onClick={() => setIsAvatarModalOpen(false)}
         >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="avatar-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
-              className="modal-close"
+              className="avatar-modal-close"
               onClick={() => setIsAvatarModalOpen(false)}
             >
               ×
             </button>
-            <img src={avatarUrl} alt="Avatar" className="modal-avatar" />
+            <img src={avatarUrl} alt="Avatar" className="avatar-modal-image" />
             <button
-              className="change-photo-btn"
+              className="avatar-change-btn"
               onClick={() => fileInputRef.current.click()}
             >
               Change photo
@@ -164,9 +174,15 @@ const Profile = () => {
               style={{ display: "none" }}
               onChange={onAvatarChange}
             />
-            <button className="view-more-btn" onClick={uploadAvatar}>
-              Upload
-            </button>
+            {selectedAvatarFile && (
+              <button
+                className="avatar-upload-btn"
+                onClick={uploadAvatar}
+                disabled={!selectedAvatarFile}
+              >
+                Upload
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -211,6 +227,10 @@ const Profile = () => {
               src={post.image || post.image_url}
               alt="Post"
               className="post-image"
+              onClick={() => {
+                setEditingPost(post);
+                setIsEditModalOpen(true);
+              }}
             />
             <div className="post-info">
               <div className="tags">
@@ -237,6 +257,20 @@ const Profile = () => {
       <button className="view-more-btn">
         View more ({posts.length - filteredPosts.length})
       </button>
+      {isEditModalOpen && editingPost && (
+        <EditPostModal
+          post={editingPost}
+          onClose={() => setIsEditModalOpen(false)}
+          onUpdated={(updatedPost) => {
+            setPosts((prev) =>
+              prev.map((p) => (p.id === updatedPost.id ? updatedPost : p))
+            );
+          }}
+          onDeleted={(deletedId) => {
+            setPosts((prev) => prev.filter((p) => p.id !== deletedId));
+          }}
+        />
+      )}
     </div>
   );
 };
