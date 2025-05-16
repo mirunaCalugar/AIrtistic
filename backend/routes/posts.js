@@ -74,12 +74,20 @@ import {
   createPost,
   findOrCreateTag,
   linkPostTag,
-  getPostsByUser,
   getAllPosts,
   updatePost,
   deletePost,
 } from "../models/postModel.js";
-import { editPost, removePost } from "../controllers/postController.js";
+import {
+  editPost,
+  removePost,
+  unlikePost,
+} from "../controllers/postController.js";
+import {
+  likePost,
+  getPosts,
+  getPostsByUserId,
+} from "../controllers/postController.js";
 
 const router = express.Router();
 
@@ -112,16 +120,16 @@ router.post("/", requireAuth, uploadPost.single("image"), async (req, res) => {
 });
 
 // Get all posts for the authenticated user
-router.get("/", requireAuth, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const posts = await getPostsByUser(userId);
-    return res.json({ posts });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Could not fetch posts" });
-  }
-});
+// router.get("/", requireAuth, async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const posts = await getPostsByUser(userId);
+//     return res.json({ posts });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ error: "Could not fetch posts" });
+//   }
+// });
 
 // Get all posts from all users (Artists' choice)
 router.get("/all", requireAuth, async (req, res) => {
@@ -140,6 +148,7 @@ router.get("/all", requireAuth, async (req, res) => {
       .json({ error: "Could not fetch posts from other users" });
   }
 });
+router.get("/user/:id", requireAuth, getPostsByUserId);
 // UPDATE
 router.put(
   "/:id",
@@ -153,5 +162,14 @@ router.delete(
   requireAuth,
   async (req, res) => await removePost(req, res)
 );
+
+// router.post(
+//   "/:id/like",
+//   requireAuth,
+//   async (req, res) => await likePost(req, res)
+// );
+router.get("/", requireAuth, getPosts);
+router.post("/:id/like", requireAuth, likePost);
+router.delete("/:id/like", requireAuth, unlikePost);
 
 export default router;

@@ -58,7 +58,7 @@ const Explore = () => {
     <div className="explore-container">
       <div className="explore-header">
         <h1>🧭 Discover</h1>
-        <p>Step into a new zone, join a new conversation.</p>
+        <p> Discover new artists, inspiration from other pieces of art </p>
       </div>
 
       <div className="explore-search">

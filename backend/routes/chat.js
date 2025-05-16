@@ -30,11 +30,12 @@ router.post("/", async (req, res) => {
     });
     const reply = chatCompletion.choices[0].message.content;
 
-    // 2️⃣ Generăm imagine pe același prompt
+    // 2️⃣ Generăm imagine pe același prompt, la 1024×1024 și returnăm URL
     const imageResponse = await openai.images.generate({
       prompt: message,
       n: 1,
-      size: "512x512",
+      size: "1024x1024", // rezoluție înaltă pentru detalii artistice
+      response_format: "url", // asigură returnarea unui link
     });
     const imageUrl = imageResponse.data[0].url;
 

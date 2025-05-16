@@ -95,3 +95,34 @@ export async function deletePost(postId) {
   await db.query(`DELETE FROM post_tags WHERE post_id = $1`, [postId]);
   await db.query(`DELETE FROM posts WHERE id = $1`, [postId]);
 }
+// Check if a post is liked by a user
+export async function isPostLikedByUser(postId, userId) {
+  const res = await db.query(
+    `SELECT 1
+       FROM likes
+      WHERE post_id = $1
+        AND user_id = $2`,
+    [postId, userId]
+  );
+  return res.rowCount > 0;
+}
+//Add a like to a post
+// If the like already exists, do nothing
+export async function addLike(postId, userId) {
+  await db.query(
+    `INSERT INTO likes (post_id, user_id)
+     VALUES ($1, $2)
+     ON CONFLICT DO NOTHING`,
+    [postId, userId]
+  );
+}
+
+export async function countLikes(postId) {
+  const res = await db.query(
+    `SELECT COUNT(*)::int AS cnt
+       FROM likes
+      WHERE post_id = $1`,
+    [postId]
+  );
+  return res.rows[0].cnt;
+}

@@ -1,3 +1,4 @@
+// src/components/ArtistProfile.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./Profile.css";
@@ -13,7 +14,6 @@ const ArtistProfile = () => {
   const [searchTag, setSearchTag] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Fetch artist profile and posts
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -21,44 +21,96 @@ const ArtistProfile = () => {
       return;
     }
 
-    fetch(`${BACKEND_URL}/artists/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch artist");
-        return res.json();
-      })
-      .then(({ artist, posts }) => {
+    (async () => {
+      try {
+        // Fetch artist data
+        const artistRes = await fetch(`${BACKEND_URL}/artists/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!artistRes.ok) throw new Error("Failed to fetch artist");
+        const { artist } = await artistRes.json();
         setArtist(artist);
-        setPosts(posts);
-      })
-      .catch((err) => {
+
+        // Fetch this artist's posts
+        const postsRes = await fetch(`${BACKEND_URL}/api/posts/user/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!postsRes.ok) throw new Error("Failed to fetch posts");
+        const { posts: artistPosts } = await postsRes.json();
+        setPosts(
+          artistPosts.map((p) => ({
+            ...p,
+            likes: Number(p.likes) || 0,
+            liked: Boolean(p.liked),
+          }))
+        );
+      } catch (err) {
         console.error(err);
         navigate("/");
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id, navigate]);
 
-  // Handle liking a post
-  const handleLike = (postId) => {
+  const handleLike = async (postId) => {
+    // Determine if we're toggling on or off
+    const current = posts.find((p) => p.id === postId);
+    const willLike = !current.liked;
+
+    // Optimistic update
     setPosts((prev) =>
       prev.map((p) =>
-        p.id === postId ? { ...p, likes: (p.likes || 0) + 1 } : p
+        p.id === postId
+          ? { ...p, liked: willLike, likes: p.likes + (willLike ? 1 : -1) }
+          : p
       )
     );
+
+    const token = localStorage.getItem("token");
+    const method = willLike ? "POST" : "DELETE";
+    const res = await fetch(`${BACKEND_URL}/api/posts/${postId}/like`, {
+      method,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) {
+      // Rollback on error
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, liked: current.liked, likes: current.likes }
+            : p
+        )
+      );
+      return;
+    }
+
+    // Optionally sync exact count on success (POST returns {likes}, DELETE may return {likes})
+    const data = await res.json();
+    if (typeof data.likes === "number") {
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, likes: data.likes } : p))
+      );
+    }
   };
 
   if (loading) return <p>Loading artist…</p>;
   if (!artist) return <p>Artist not found</p>;
 
-  const avatarSrc = artist.avatarUrl
-    ? `${BACKEND_URL}${artist.avatarUrl}`
-    : "/user.png";
+  // Build safe avatar URL
+  const avatarRaw = artist.avatarUrl || "/user.png";
+  const avatarSrc = avatarRaw.startsWith("http")
+    ? avatarRaw
+    : `${BACKEND_URL}${avatarRaw.startsWith("/") ? "" : "/"}${avatarRaw}`;
 
-  const filteredPosts = posts.filter((post) =>
-    post.tags.some((tag) =>
-      tag.name.toLowerCase().includes(searchTag.toLowerCase())
-    )
+  // Filter by tag
+  const filteredPosts = posts.filter(
+    (post) =>
+      !searchTag.trim() ||
+      post.tags?.some((tag) =>
+        tag.name.toLowerCase().includes(searchTag.toLowerCase())
+      )
   );
 
   return (
@@ -81,40 +133,47 @@ const ArtistProfile = () => {
         <input
           type="text"
           placeholder="Search by tags..."
-          className="search-input"
           value={searchTag}
           onChange={(e) => setSearchTag(e.target.value)}
+          className="search-input"
         />
       </div>
 
       <div className="posts-container">
-        {filteredPosts.map((post) => (
-          <div key={post.id} className="post-card">
-            <img
-              src={`${BACKEND_URL}${post.image_url}`}
-              alt={`Post ${post.id}`}
-              className="post-image"
-            />
-            <div className="post-info">
-              <div className="tags">
-                {post.tags.map((tag) => (
-                  <span key={tag.id} className="tag">
-                    #{tag.name}
-                  </span>
-                ))}
-              </div>
-              <div className="like-section">
-                <button
-                  onClick={() => handleLike(post.id)}
-                  className={`like-button ${post.likes > 0 ? "liked" : ""}`}
-                >
-                  <span className="heart-icon">♥</span>
-                </button>
-                <span className="like-count">{post.likes}</span>
+        {filteredPosts.map((post, idx) => {
+          // Safe image URL
+          const raw = post.image_url || post.image;
+          const imgSrc = raw.startsWith("http")
+            ? raw
+            : `${BACKEND_URL}${raw.startsWith("/") ? "" : "/"}${raw}`;
+          return (
+            <div key={post.id ?? idx} className="post-card">
+              <img
+                src={imgSrc}
+                alt={`Post ${post.id}`}
+                className="post-image"
+              />
+              <div className="post-info">
+                <div className="tags">
+                  {post.tags?.map((tag, tIdx) => (
+                    <span key={tag.id ?? tIdx} className="tag">
+                      #{tag.name}
+                    </span>
+                  ))}
+                </div>
+                <div className="like-section">
+                  <button
+                    onClick={() => handleLike(post.id)}
+                    className={`like-button ${post.liked ? "liked" : ""}`}
+                  >
+                    <span className="heart-icon">♥</span>
+                  </button>
+                  <span className="like-count">{post.likes}</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Profile.css";
+import "../modals/PostModal.css";
 import PostModal from "../modals/PostModal";
 import EditPostModal from "../modals/EditPostModal";
 
@@ -31,7 +32,7 @@ const Profile = () => {
       return;
     }
 
-    async function loadAll() {
+    const loadAll = async () => {
       try {
         // Fetch user profile
         const profileRes = await fetch(`${BACKEND_URL}/auth/profile`, {
@@ -42,7 +43,7 @@ const Profile = () => {
         if (!isMounted) return;
         setUser(user);
 
-        // Load avatar as blob URL
+        // Load avatar blob
         if (user.avatarUrl) {
           const imgRes = await fetch(`${BACKEND_URL}${user.avatarUrl}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -53,18 +54,27 @@ const Profile = () => {
           }
         }
 
-        // Fetch posts
+        // Fetch posts with like-info
         const postsRes = await fetch(`${BACKEND_URL}/api/posts`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (postsRes.ok) {
           const { posts } = await postsRes.json();
-          if (isMounted) setPosts(posts);
+          if (isMounted) {
+            setPosts(
+              posts.map((p) => ({
+                ...p,
+                likes: Number(p.likes) || 0,
+                liked: Boolean(p.liked),
+                tags: Array.isArray(p.tags) ? p.tags : [],
+              }))
+            );
+          }
         }
       } catch (err) {
         console.error(err);
       }
-    }
+    };
 
     loadAll();
     return () => {
@@ -81,7 +91,6 @@ const Profile = () => {
     }
   };
   const uploadAvatar = async () => {
-    const file = fileInputRef.current.files[0];
     if (!selectedAvatarFile) return;
     const formData = new FormData();
     formData.append("avatar", selectedAvatarFile);
@@ -99,7 +108,7 @@ const Profile = () => {
     }
   };
 
-  // New post handlers
+  // New post
   const onNewFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -109,23 +118,48 @@ const Profile = () => {
   const handlePostAdded = (newPost) => setPosts((prev) => [newPost, ...prev]);
 
   // Likes
-  const handleLike = (id) =>
+  const handleLike = async (postId) => {
     setPosts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p))
+      prev.map((p) =>
+        p.id === postId && !p.liked
+          ? { ...p, liked: true, likes: p.likes + 1 }
+          : p
+      )
     );
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${BACKEND_URL}/api/posts/${postId}/like`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, liked: false, likes: p.likes - 1 } : p
+        )
+      );
+    } else {
+      const { likes } = await res.json();
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, likes } : p))
+      );
+    }
+  };
 
-  // Tag filtering
-  const filteredPosts = posts.filter((post) =>
-    post.tags.some((tag) =>
-      tag.name.toLowerCase().includes(searchTag.toLowerCase())
-    )
+  const userPosts = posts.filter((p) => p.user_id === user.id);
+  const filteredPosts = userPosts.filter(
+    (post) =>
+      !searchTag.trim() ||
+      (post.tags || []).some((tag) =>
+        tag.name.toLowerCase().includes(searchTag.toLowerCase())
+      )
   );
 
   if (!user) return <div>Loading profile…</div>;
+  <div>Loading profile…</div>;
 
   return (
     <div className="profile-container">
-      {/* Profile header */}
+      {/* Header */}
       <header className="profile-header">
         <div className="user-info">
           <img
@@ -175,11 +209,7 @@ const Profile = () => {
               onChange={onAvatarChange}
             />
             {selectedAvatarFile && (
-              <button
-                className="avatar-upload-btn"
-                onClick={uploadAvatar}
-                disabled={!selectedAvatarFile}
-              >
+              <button className="avatar-upload-btn" onClick={uploadAvatar}>
                 Upload
               </button>
             )}
@@ -220,9 +250,10 @@ const Profile = () => {
       </div>
 
       {/* Posts list */}
+      {/* Posts list */}
       <div className="posts-container">
-        {filteredPosts.map((post) => (
-          <div key={post.id} className="post-card">
+        {filteredPosts.map((post, idx) => (
+          <div key={post.id ?? idx} className="post-card">
             <img
               src={post.image || post.image_url}
               alt="Post"
@@ -234,8 +265,8 @@ const Profile = () => {
             />
             <div className="post-info">
               <div className="tags">
-                {post.tags.map((tag) => (
-                  <span key={tag.id} className="tag">
+                {post.tags.map((tag, tIdx) => (
+                  <span key={tag.id ?? tIdx} className="tag">
                     #{tag.name}
                   </span>
                 ))}
@@ -243,7 +274,8 @@ const Profile = () => {
               <div className="like-section">
                 <button
                   onClick={() => handleLike(post.id)}
-                  className={`like-button ${post.likes > 0 ? "liked" : ""}`}
+                  className={`like-button ${post.liked ? "liked" : ""}`}
+                  disabled={post.liked}
                 >
                   <span className="heart-icon">♥</span>
                 </button>
@@ -257,18 +289,19 @@ const Profile = () => {
       <button className="view-more-btn">
         View more ({posts.length - filteredPosts.length})
       </button>
+
       {isEditModalOpen && editingPost && (
         <EditPostModal
           post={editingPost}
           onClose={() => setIsEditModalOpen(false)}
-          onUpdated={(updatedPost) => {
+          onUpdated={(updatedPost) =>
             setPosts((prev) =>
               prev.map((p) => (p.id === updatedPost.id ? updatedPost : p))
-            );
-          }}
-          onDeleted={(deletedId) => {
-            setPosts((prev) => prev.filter((p) => p.id !== deletedId));
-          }}
+            )
+          }
+          onDeleted={(deletedId) =>
+            setPosts((prev) => prev.filter((p) => p.id !== deletedId))
+          }
         />
       )}
     </div>

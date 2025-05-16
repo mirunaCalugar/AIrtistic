@@ -236,3 +236,12 @@ body.dark {
   color: var(--clr-text, #555);
   user-select: none;
 }
+.role-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius);
+  background-color: var(--clr-primary);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
