@@ -1,16 +1,114 @@
-<<<<<<< HEAD
-# React + Vite
+# AIrtistic – Spațiu Web Interactiv pentru Expoziții Artistice
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Autor:** Miruna-Ioana Călugăr  
+**Coordonator științific:** Conf. dr.ing. Adriana Albu  
+**Lucrare de diplomă – UPT, Facultatea de Automatică și Calculatoare**  
+**Sesiunea:** Iulie 2025
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Descriere
 
-## Expanding the ESLint configuration
+**AIrtistic** este o aplicație web interactivă care folosește inteligența artificială (AI) pentru a genera artă digitală pornind de la descrieri textuale introduse de utilizatori. Platforma permite exprimarea creativă, partajarea lucrărilor în galerie și explorarea contribuțiilor altor utilizatori, având ca scop democratizarea procesului artistic și stimularea creativității digitale în rândul tinerilor.
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# licenta
->>>>>>> 3ae56d93ee49755f8f90e5eab947ec205032393b
+---
+
+## Repository proiect
+
+**GitHub:** [https://github.com/mirunaCalugar/AIrtistic](https://github.com/mirunaCalugar/AIrtistic)
+
+---
+
+## Structura livrabilă
+
+Repository-ul conține:
+
+- Codul sursă complet (frontend + backend)
+- Fişiere de configurare (ex: `.env.example`, `package.json`, `vite.config.js`)
+- Fișiere SQL pentru structura bazei de date
+- Documentație tehnică și ghid de utilizare
+- Nu conține fișiere binare compilate
+
+---
+
+## Tehnologii utilizate
+
+- **Frontend:** React + Vite
+- **Backend:** Node.js + Express
+- **Bază de date:** PostgreSQL
+- **Serviciu AI extern:** OpenAI DALL·E API
+- **Autentificare:** JWT (JSON Web Tokens)
+
+---
+
+## Pași de compilare și rulare
+
+### 1. Clonare repository
+
+```bash
+git clone https://github.com/mirunaCalugar/AIrtistic.git
+cd airtistic
+```
+
+### 2. Configurare mediu
+
+#### a. Backend (`/backend`)
+
+```bash
+cd backend
+npm install
+cp .env.example .env
+
+```
+
+#### b. Frontend (`/airtistic`)
+
+```bash
+cd ../airtistic
+npm install
+```
+
+### 3. Bază de date
+
+- Creează o bază de date PostgreSQL
+- Rulează scripturile SQL din `server/db/init.sql` (sau fișierul furnizat)
+
+---
+
+## Lansare aplicație
+
+### Backend
+
+```bash
+cd backend
+npm run dev
+```
+
+### Frontend
+
+```bash
+cd cd airtistic
+npm run dev
+```
+
+Aplicația va fi disponibilă implicit la:
+
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:5000`
+
+---
+
+## Resurse suplimentare
+
+- [Documentația DALL·E API](https://platform.openai.com/docs/guides/images)
+- [React (Vite) Docs](https://vitejs.dev/guide/)
+- [Node.js + Express Guide](https://expressjs.com/)
+- [PostgreSQL Docs](https://www.postgresql.org/docs/)
+
+---
+
+## Notă
+
+Acest proiect este realizat în scop educațional și academic, în cadrul Facultății de Automatică și Calculatoare, Universitatea Politehnica Timișoara.
+
+---
