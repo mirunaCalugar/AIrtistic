@@ -30,23 +30,20 @@ router.post("/", async (req, res) => {
     });
     const reply = chatCompletion.choices[0].message.content;
 
-    // 2️⃣ Generăm imagine pe același prompt, la 1024×1024 și returnăm URL
     const imageResponse = await openai.images.generate({
       prompt: message,
       n: 1,
-      size: "1024x1024", // rezoluție înaltă pentru detalii artistice
-      response_format: "url", // asigură returnarea unui link
+      size: "1024x1024",
+      response_format: "url",
     });
     const imageUrl = imageResponse.data[0].url;
 
-    // 3️⃣ Opțional: salvăm în DB (user_id poate fi NULL)
     await pool.query(
       `INSERT INTO generations (user_id, prompt_text, generated_image_url)
          VALUES ($1, $2, $3)`,
       [null, message, imageUrl]
     );
 
-    // 4️⃣ Trimitem răspunsul combinat
     res.json({ reply, imageUrl });
   } catch (err) {
     console.error("🛑 Error în /api/chat:", err);

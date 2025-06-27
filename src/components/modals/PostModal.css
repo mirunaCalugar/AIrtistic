@@ -189,6 +189,11 @@
   animation: fadeInUp 0.2s ease-out forwards;
   transform: translateY(-10px);
   opacity: 0;
+  display: grid;
+  align-content: space-between;
+  justify-content: center;
+  align-items: stretch;
+  justify-items: stretch;
 }
 
 @keyframes fadeInUp {

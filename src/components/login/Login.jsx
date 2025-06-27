@@ -2,6 +2,7 @@ import React from "react";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import leftIcon from "../../assets/left.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -84,7 +85,17 @@ const Login = () => {
         </p>
       </div>
 
-      <div className="login-right"></div>
+      <div className="login-right">
+        <div
+          className="login-side login-side--left"
+          style={{
+            backgroundImage: `url(${leftIcon})`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            backgroundSize: "80px",
+          }}
+        ></div>
+      </div>
     </div>
   );
 };

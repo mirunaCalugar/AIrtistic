@@ -62,20 +62,20 @@ export default function PostModal({ isOpen, onClose, file, onPosted }) {
         <form onSubmit={handleSubmit} className="post-form">
           <textarea
             className="modal-form"
-            placeholder="Descriere…"
+            placeholder="Description..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
           />
           <input
             type="text"
-            placeholder="Tag-uri separate prin virgulă"
+            placeholder="Comma separated tags"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
           />
           <div className="modal-actions">
             <button type="submit" className="btn save-btn" disabled={loading}>
-              {loading ? "Se încarcă..." : "Publică"}
+              {loading ? "Se încarcă..." : "Post"}
             </button>
             <button
               type="button"
@@ -83,7 +83,7 @@ export default function PostModal({ isOpen, onClose, file, onPosted }) {
               onClick={onClose}
               disabled={loading}
             >
-              Anulează
+              Cancel
             </button>
           </div>
         </form>

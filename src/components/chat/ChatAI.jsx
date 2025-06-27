@@ -93,6 +93,32 @@ export default function ChatAI() {
     }
   };
 
+  const onPostClick = async (url) => {
+    setLoading(true);
+    setShowModal(false);
+    try {
+      const proxyUrl = `http://localhost:5000/api/download?url=${encodeURIComponent(
+        url
+      )}`;
+      const resp = await fetch(proxyUrl);
+      const blob = await resp.blob();
+      const file = new File([blob], "ai-generated.png", { type: blob.type });
+      setPendingFile(file);
+      setPostModalOpen(true);
+    } catch (err) {
+      console.error("Error preparing post file:", err);
+      alert("Nu s-a putut pregăti imaginea pentru postare.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePostCompleted = (newPost) => {
+    console.log("Post nou creat:", newPost);
+    setPostModalOpen(false);
+    setPendingFile(null);
+  };
+
   const startNewChat = () => {
     setMessages([]);
     setHistory([]);
@@ -124,31 +150,17 @@ export default function ChatAI() {
     document.body.removeChild(a);
   };
 
-  const onPostClick = async (url) => {
-    setShowModal(false);
-    try {
-      const proxyUrl = `http://localhost:5000/api/download?url=${encodeURIComponent(
-        url
-      )}`;
-      const resp = await fetch(proxyUrl);
-      const blob = await resp.blob();
-      const file = new File([blob], "ai-generated.png", { type: blob.type });
-      setPendingFile(file);
-      setPostModalOpen(true);
-    } catch (err) {
-      console.error("Error preparing post file:", err);
-      alert("Nu s-a putut pregăti imaginea pentru postare.");
-    }
-  };
-
-  const handlePostCompleted = (newPost) => {
-    console.log("Post nou creat:", newPost);
-    setPostModalOpen(false);
-    setPendingFile(null);
-  };
-
   return (
     <div className="chat-app">
+      {loading && (
+        <div className="modal-overlay">
+          <div className="loader">
+            <span className="loader-text">loading</span>
+            <span className="load"></span>
+          </div>
+        </div>
+      )}
+
       <aside className="sidebar">
         <h2>AIChat</h2>
         <button className="new-chat" onClick={startNewChat}>
@@ -222,10 +234,11 @@ export default function ChatAI() {
         <div className="input-bar">
           <input
             type="text"
-            placeholder="Scrie mesajul..."
+            placeholder="Ask me anything..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            disabled={loading}
           />
           <button
             className="send-btn"
@@ -235,11 +248,6 @@ export default function ChatAI() {
             ➤
           </button>
         </div>
-
-        <small className="notice">
-          StormBot may produce inaccurate information about people, places, or
-          fact. <a href="#">Privacy Notice</a>
-        </small>
       </main>
 
       {/* Preview Modal */}

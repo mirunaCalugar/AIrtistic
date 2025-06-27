@@ -1,179 +1,162 @@
-/* Navbar.css */
-@import url("https://fonts.googleapis.com/css2?family=Bevan&display=swap");
-
+/* ================================
+   Navbar Core
+================================ */
 .navbar {
-  width: 100%;
-  background-color: #fff;
-  box-shadow: 0 2px 4px #ffffff00;
-  position: relative;
-  z-index: 1000;
-}
-
-.navbar-container {
-  width: 100%;
-  margin: 0 auto;
-
-  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--muted);
+  padding: 12px 24px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 100;
 }
 
-/* Brand & Logo */
 .navbar-brand {
   display: flex;
   align-items: center;
 }
 
-.logo {
-  width: 40px;
+.navbar-logo {
   height: 40px;
-  border: 2px solid #ffffff00;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c73ff;
-  margin-right: 8px;
 }
 
-.brand-name {
-  font-family: "Bevan";
-  font-size: 28px;
-  line-height: 42px;
-  font-weight: 400;
-  color: #6c73ffff;
+.mobile-toggle {
+  display: none;
+  margin-left: 12px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
+/* ================================
+   Desktop Menu
+================================ */
 .navbar-links {
   list-style: none;
   display: flex;
-  gap: 24px;
-  font-family: "Inter", sans-serif;
+  align-items: center;
+  gap: 16px;
 }
 
 .navbar-links li a {
   position: relative;
   text-decoration: none;
-  color: #333;
+  color: #595e67;
   transition: color 0.3s ease;
+  font-family: "Bevan", sans-serif;
 }
-
 .navbar-links li a:hover {
   color: #6c73ff;
-  font-size: 400;
-  text-decoration: underline;
-  text-decoration-thickness: 3px;
 }
 .navbar-links li a::after {
   content: "";
   position: absolute;
   left: 0;
-  bottom: -3px; /* Ajustează distanța față de text */
+  bottom: -4px;
   width: 0;
-  height: 3px; /* Grosimea liniei */
+  height: 3px;
   background-color: #6c73ff;
   transition: width 0.3s ease;
 }
-.navbar-links li a:hover {
-  color: #6c73ff;
-}
-
 .navbar-links li a:hover::after {
   width: 100%;
 }
 
-/* Butoane */
-.navbar-buttons {
+/* Active Link */
+.navbar-links li a.active,
+.navbar-links li a[aria-current="page"] {
+  color: #6c73ff;
+}
+.navbar-links li a.active::after,
+.navbar-links li a[aria-current="page"]::after {
+  width: 100%;
+}
+
+/* Auth Buttons */
+.auth-buttons {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 8px;
 }
-
 .btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 999px;
-  font-weight: 500;
+  padding: 6px 12px;
+  border: 2px solid #373daf;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
-  background-color: #6c73ff;
-}
-
-.register {
-  background-color: #6c73ff;
-  border: 2px solid #19117c;
-  color: #19117c;
-  color: aliceblue;
+  font-size: 14px;
   font-family: "Inter", sans-serif;
 }
-.register:hover {
-  background-color: #19117c;
-}
-
-.log-in {
-  background-color: #6c73ff;
+.btn:hover {
+  background: #373daf;
   color: #fff;
-  border: 2px solid #19117c;
+}
+.register {
+  background: #6c73ff;
+  color: #fff;
+}
+.log-in {
+  background: #6c73ff;
+  color: #fff;
+}
+.log-out {
+  background: #6c73ff;
+  color: #fff;
 }
 
-.log-in:hover {
-  background-color: #0f0b6c;
-}
-
-/* Iconiță Meniu Mobil */
-.mobile-menu-icon {
-  display: none;
+/* ================================
+   Mobile Menu
+================================ */
+.mobile-navbar-links {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  list-style: none;
+  display: flex;
   flex-direction: column;
-  cursor: pointer;
+  gap: 12px;
+  padding: 16px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.mobile-navbar-links li a {
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+  padding: 8px 0;
+}
+.mobile-navbar-links li a.active,
+.mobile-navbar-links li a[aria-current="page"] {
+  color: #6c73ff;
+}
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
 }
 
-.menu-bar {
-  width: 25px;
-  height: 3px;
-  background-color: #333;
-  margin: 3px 0;
+.navbar-title {
+  font-size: 2rem;
+  font-family: "Bevan", sans-serif;
+  font-weight: bold;
+  color: #6c73ff;
 }
 
-/* Stiluri pentru Ecran Mic */
+.navbar-logo {
+  height: 40px;
+}
+
+/* ================================
+   Responsive Breakpoint
+================================ */
 @media (max-width: 768px) {
-  .navbar-links,
-  .navbar-buttons {
+  .navbar-links {
     display: none;
   }
-  .mobile-menu-icon {
-    display: flex;
-  }
-  .mobile-navbar-links {
-    list-style: none;
-    margin: 0;
-    padding: 8px 16px;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  .mobile-navbar-links li {
-    padding: 8px 0;
-  }
-  .mobile-navbar-links li a {
-    text-decoration: none;
-    color: #333;
-    font-size: 1rem;
-    font-family: "Inter", sans-serif;
-  }
-  .mobile-navbar-links li a:hover {
-    text-decoration: underline;
-    color: #333;
-    font-size: 1rem;
-    color: #6c73ff;
-    font-size: 400;
-    text-decoration: underline;
-    text-decoration-thickness: 3px;
-    font-family: "Inter", sans-serif;
-  }
-  .mobile-navbar-links li .btn {
-    width: 100%;
+  .mobile-toggle {
+    display: block;
   }
 }

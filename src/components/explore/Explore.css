@@ -9,6 +9,7 @@
   font-size: 2.5rem;
   margin-bottom: 10px;
   font-family: "Bevan";
+  color: #6c73ff;
 }
 
 .explore-header p {
@@ -172,4 +173,10 @@
   flex-direction: column;
   justify-content: space-between;
   transition: transform 0.2s ease;
+  font-family: "Bevan";
+  color: #6c73ff;
+}
+.artist-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px #6c63ff;
 }

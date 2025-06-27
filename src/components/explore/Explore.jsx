@@ -1,4 +1,6 @@
+// src/components/Explore.jsx
 import React, { useRef, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Explore.css";
 import ArtistChoice from "./ArtistChoice";
 import ArtistCard from "./ArtistCard";
@@ -6,8 +8,10 @@ import ArtistCard from "./ArtistCard";
 const BACKEND_URL = "http://localhost:5000";
 
 const Explore = () => {
+  const navigate = useNavigate();
   const [authors, setAuthors] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef(null);
   const scrollAuthorsRef = useRef(null);
 
@@ -41,7 +45,7 @@ const Explore = () => {
       .catch(console.error);
   }, []);
 
-  // Scroll logic
+  // Scroll helper
   const scrollRight = (ref) => {
     if (!ref.current) return;
     const { scrollLeft, clientWidth, scrollWidth } = ref.current;
@@ -54,19 +58,37 @@ const Explore = () => {
     }
   };
 
+  // Filter authors by search query
+  const filteredAuthors = searchQuery.trim()
+    ? authors.filter((author) =>
+        author.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : authors;
+
   return (
     <div className="explore-container">
       <div className="explore-header">
         <h1>🧭 Discover</h1>
-        <p> Discover new artists, inspiration from other pieces of art </p>
+        <p>Discover new artists, inspiration from other pieces of art</p>
       </div>
 
       <div className="explore-search">
-        <input type="text" placeholder="Search..." />
-        <button className="explore-dropdown">Search</button>
+        <input
+          type="text"
+          placeholder="Search artists by name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-input"
+        />
+        <button
+          className="explore-dropdown"
+          onClick={() => {} /* optional action */}
+        >
+          Search
+        </button>
       </div>
 
-      {/* Artists' choice — random posts thumbnails */}
+      {/* Artists' choice */}
       <div className="section">
         <div className="artists-header">
           <h3>Artists' choice</h3>
@@ -81,7 +103,11 @@ const Explore = () => {
             .sort(() => 0.5 - Math.random())
             .slice(0, 12)
             .map((p) => (
-              <ArtistChoice key={p.id} image={`${BACKEND_URL}${p.image}`} />
+              <ArtistChoice
+                key={p.id}
+                image={`${BACKEND_URL}${p.image}`}
+                onVisit={() => navigate(`/artist/${p.user_id}`)}
+              />
             ))}
         </div>
       </div>
@@ -98,20 +124,24 @@ const Explore = () => {
           </button>
         </div>
         <div className="authors-carousel" ref={scrollAuthorsRef}>
-          {authors.map((author) => (
-            <ArtistCard
-              key={author.id}
-              id={author.id}
-              name={author.name}
-              image={
-                author.image && author.image.startsWith("/uploads/")
-                  ? `${BACKEND_URL}${author.image}`
-                  : author.image || "/user.png"
-              }
-              isVerified={author.isVerified}
-              onVisit={() => (window.location.href = `/artist/${author.id}`)}
-            />
-          ))}
+          {filteredAuthors.length === 0 ? (
+            <p>No artists found.</p>
+          ) : (
+            filteredAuthors.map((author) => (
+              <ArtistCard
+                key={author.id}
+                id={author.id}
+                name={author.name}
+                image={
+                  author.image && author.image.startsWith("/uploads/")
+                    ? `${BACKEND_URL}${author.image}`
+                    : author.image || "/user.png"
+                }
+                isVerified={author.isVerified}
+                onVisit={() => navigate(`/artist/${author.id}`)}
+              />
+            ))
+          )}
         </div>
       </div>
     </div>

@@ -141,10 +141,10 @@ const SignUp = () => {
           </div>
 
           <button type="submit">Sign Up</button>
-          <div className="divider">Or sign up with</div>
+          {/* <div className="divider">Or sign up with</div>
           <button className="google-signin">
             <span className="google-logo">G</span>
-          </button>
+          </button> */}
         </form>
         <p className="redirect-login">
           Already have an account?{" "}
